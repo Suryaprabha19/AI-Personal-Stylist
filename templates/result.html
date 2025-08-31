@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Style Suggestions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .download-btn {
+            background-color: #28a745; /* A green color */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Personalized Style Analysis</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="analysis-box" id="capture-area">
+
+            <div class="features-column">
+                <div class="features-display">
+                    <h2>Extracted Features</h2>
+                    <ul>
+                        <li><strong>Gender:</strong> 👩‍‍ {{ features.gender }}</li>
+                        <li><strong>Height:</strong> 📏 {{ features.height }} cm</li>
+                        <li><strong>Hair Color:</strong> 💇 {{ features.hair_color }}</li>
+                        <li><strong>Eye Color:</strong> 👁️ {{ features.eye_color }}</li>
+                        <li><strong>Skin Tone:</strong> 🎨 {{ features.skin_tone }}</li>
+                        <li><strong>Undertone:</strong> ☀️ {{ features.undertone }}</li>
+                        <li><strong>Body Shape:</strong> 💁‍♀️ {{ features.body_shape }}</li>
+                        <li><strong>Torso Length:</strong> ↔️ {{ features.torso_length }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="suggestions-column">
+                <div class="suggestions-section">
+                    <h2>Style Suggestions</h2>
+                    {% if recommendations %}
+                        {% if recommendations[0].get('type') == 'NoMatch' or recommendations[0].get('type') == 'Error' %}
+                            <p>{{ recommendations[0].suggestion }}</p>
+                        {% else %}
+                            {% for rec in recommendations %}
+                                <div class="suggestion-card">
+                                    {% if rec.get('recommended_clothing_colors') %}<p><strong>Recommended Clothing Colors:</strong> 🌈 {{ rec.get('recommended_clothing_colors') }}</p>{% endif %}
+                                    {% if rec.get('avoid_clothing_colors') %}<p><strong>Avoid Clothing Colors:</strong> 🚫 {{ rec.get('avoid_clothing_colors') }}</p>{% endif %}
+                                    {% if rec.get('recommended_fitting_style') %}<p><strong>Recommended Fitting Style:</strong> 👖 {{ rec.get('recommended_fitting_style') }}</p>{% endif %}
+                                    {% if rec.get('recommended_materials') %}<p><strong>Recommended Materials:</strong> 🧵 {{ rec.get('recommended_materials') }}</p>{% endif %}
+                                    {% if rec.get('recommended_patterns') %}<p><strong>Recommended Patterns:</strong> 🔷 {{ rec.get('recommended_patterns') }}</p>{% endif %}
+                                    {% if rec.get('recommended_jewelry_metal') %}<p><strong>Recommended Jewelry Metal:</strong> ✔️ {{ rec.get('recommended_jewelry_metal') }}</p>{% endif %}
+                                    {% if rec.get('recommended_shoes') %}<p><strong>Recommended Shoes:</strong> 👟 {{ rec.get('recommended_shoes') }}</p>{% endif %}
+                                    {% if rec.get('recommended_clothing_color_wheel_region') %}<p><strong>Recommended Color Region:</strong> ⚪ {{ rec.get('recommended_clothing_color_wheel_region') }}</p>{% endif %}
+                                    {% if rec.get('avoid_clothing_color_wheel_region') %}<p><strong>Avoid Color Region:</strong> ⛔ {{ rec.get('avoid_clothing_color_wheel_region') }}</p>{% endif %}
+                                    {% if rec.get('fabric_nature') %}<p><strong>Fabric Nature:</strong> 🌿 {{ rec.get('fabric_nature') }}</p>{% endif %}
+                                    {% if rec.get('don_t_exaggerate') %}<p><strong>Don't Exaggerate:</strong> 🛑 {{ rec.get('don_t_exaggerate') }}</p>{% endif %}
+                                    {% if rec.get('do_exaggerate') %}<p><strong>Do Exaggerate:</strong> 🚀 {{ rec.get('do_exaggerate') }}</p>{% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <p>No recommendations found. Please try again.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <div class="download-buttons">
+            <button id="download-img-btn" class="download-btn">📥 Download as Image</button>
+            <button id="download-pdf-btn" class="download-btn">📥 Download as PDF</button>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="back-button">Go Back</a>
+    </div>
+
+    <script>
+        // Make sure you are using the correct global variable for jsPDF
+        window.jsPDF = window.jspdf.jsPDF;
+
+        document.getElementById('download-img-btn').addEventListener('click', function() {
+            // Select the element to capture
+            const captureElement = document.getElementById('capture-area');
+            
+            // Use html2canvas to take the "screenshot"
+            html2canvas(captureElement).then(canvas => {
+                // Convert the canvas to a PNG image data URL
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Create a temporary link element to trigger the download
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'ChromaShape_Style_Report.png'; // Set the filename
+                
+                // Trigger the download
+                link.click();
+            });
+        });
+
+        document.getElementById('download-pdf-btn').addEventListener('click', function() {
+            const captureElement = document.getElementById('capture-area');
+            
+            html2canvas(captureElement).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                
+                // Initialize jsPDF (A4 size: 210mm wide)
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                
+                // Calculate the image height in the PDF to maintain aspect ratio
+                const pdfHeight = (imgHeight * pdfWidth) / imgWidth;
+                
+                // Add the image to the PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                // Save the PDF
+                pdf.save('ChromaShape_Style_Report.pdf');
+            });
+        });
+    </script>
+</body>
+</html>

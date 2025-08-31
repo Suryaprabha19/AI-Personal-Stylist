@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChromaShape</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Style for the loading spinner on the Auto Detect button */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script src="https://unpkg.com/scrollreveal"></script>
+</head>
+<body>
+
+    <header class="page-header" role="banner">
+        <div class="container-div">
+            <div class="site-logo">
+                <a href="#" aria-label="ChromaShape Home">ChromaShape <span class="subtitle" style="font-size: 20px; color: black;">- Your Personal AI Stylist</span></a>
+            </div>
+            <input type="checkbox" id="menu-toggle-checkbox" class="menu-toggle-checkbox" aria-hidden="true">
+            <label for="menu-toggle-checkbox" class="menu-toggle-button" aria-expanded="false" aria-controls="main-navigation-menu" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </label>
+            <nav class="main-navigation" role="navigation" aria-label="Main Navigation">
+                <ul id="main-navigation-menu">
+                    <li><a href="#how-it-works-section">How It Works</a></li>
+                    <li><a href="#about-us-section">About Us</a></li>
+                    <li><a href="#faq-section">FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-page-content">
+        <section id="hero-area" class="hero-section-area" role="region" aria-label="Welcome to ChromaShape">
+            <div class="container-div">
+                <div class="hero-content-area">
+                    <h1>Your Unique Style Discovered by AI</h1>
+                    <p>Get your personalized fashion suggestions based on your unique features like Body shape, Skin tone, and more</p>
+                    <div class="hero-action-buttons">
+                        <a href="#image-recommendations" class="button-secondary button-large">Photo Guidelines</a>
+                        <a href="#get-suggestions-form" class="button-primary button-large">Get Your AI Style Report</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="image-recommendations" class="section-spacing background-light" role="region" aria-label="Image Recommendation Guidelines">
+            <div class="container-div">
+                <h2 class="section-heading">Photo Guidelines for Better Results</h2>
+                <p class="section-subheading">Follow these tips to ensure our AI can provide the most accurate analysis.</p>
+
+                <div class="content-grid">
+                    <div class="recommendation-card">
+                        <h3>Key Photo Guidelines</h3>
+                        <ul>
+                            <li>
+                                <strong>Image Ratio (3:4):</strong> Upload a head-to-knee photo with a 3:4 aspect ratio for best detection accuracy.
+                            </li>
+                            <li>
+                                <strong>Neutral Pose:</strong> Stand straight, facing the camera directly, with your arms slightly away from your body.
+                            </li>
+                            <li>
+                                <strong>Fitted Clothing:</strong> Wear relatively fitted clothing so your natural contours are visible to the AI.
+                            </li>
+                            <li>
+                                <strong>Good Lighting:</strong> Ensure you are in a brightly and evenly lit space.
+                            </li>
+                            <li>
+                                <strong>Clear Background:</strong> Use a plain, uncluttered background.
+                            </li>
+                            <li>
+                                <strong>Image Quality:</strong> Use high-resolution, clear, and unblurry images for the best results.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="image-reference">
+                        <img src="/static/images/referenceimage.png" alt="Example of a good reference photo for body analysis">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="get-suggestions-form" class="suggestions-form-section section-spacing background-light" role="form">
+            <div class="container-div">
+                <h2 class="section-heading">Get Started – Your Personalized Style Awaits</h2>
+                <p class="section-subheading">Simply provide a few details and images, and our AI will do the rest!</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul class="flashes">
+                            {% for category, message in messages %}
+                                <li class="{{ category }}">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="upload-form-wrapper">
+                    <form id="styleForm" method="POST" enctype="multipart/form-data" action="/">
+                        <fieldset>
+                            <legend class="screen-reader-only">Personal Information</legend>
+                            <div class="form-input-group">
+                                <label for="gender-select">Gender</label>
+                                <select id="gender-select" name="gender" required aria-required="true">
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-input-group">
+                                <label for="height-input">Height (in cm)</label>
+                                <input type="number" id="height-input" name="height" placeholder="e.g., 170" min="50" max="250" step="0.1" required aria-required="true">
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend class="screen-reader-only">Photo Uploads</legend>
+                            <div class="form-input-group file-upload-group">
+                                <label for="full-body-photo-upload" class="upload-button-label">
+                                    <i class="fas fa-camera" aria-hidden="true"></i>
+                                    <span>Upload your head to knee Body Photo</span>
+                                    <p>Ensure good lighting and a clear view for body shape & general analysis.</p>
+                                </label>
+                                <input type="file" id="full-body-photo-upload" name="full_body_photo" accept="image/*" required aria-required="true">
+                                <span id="fullBodyFileName" class="uploaded-file-name">No file chosen</span>
+                            </div>
+                            <div class="form-input-group file-upload-group">
+                                <label for="wrist-photo-upload" class="upload-button-label">
+                                    <i class="fas fa-palette" aria-hidden="true"></i>
+                                    <span>Upload Wrist Photo</span>
+                                    <p>A close-up of your wrist in natural light works best.</p>
+                                </label>
+                                <input type="file" id="wrist-photo-upload" name="wrist_photo" accept="image/*" required aria-required="true">
+                                <span id="wristFileName" class="uploaded-file-name">No file chosen</span>
+                                <div class="form-input-group">
+                                    <label>Body Shape:</label> 
+                                    <center>For accurate analysis Select Manual Detect</center>
+                                    <div class="detect-options" style="display:flex; justify-content:center; gap:30px; margin:25px 0; flex-wrap:wrap;">
+                                        <a href="manual.html" id="manualDetectLink" class="button-secondary button-large" style="padding:15px 30px; text-decoration:none; border-radius:10px;" rel="noopener noreferrer">Manual Detect</a>
+                                        <a href="#" id="autoDetectLink" class="button-primary button-large" style="padding:15px 30px; text-decoration:none; border-radius:10px;">
+                                            <span id="autoBtnText">Auto Detect</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div id="resultContainer" class="form-input-group" style="display:none; margin-top: 20px;">
+                                    <label for="bodyShapeResultInput">Detected Body Shape:</label>
+                                    <input type="text" id="bodyShapeResultInput" name="body_shape_result" readonly style="background-color: #e9e9e9; font-weight: bold; text-align: center;">
+                                </div>
+
+                            </div>
+                        </fieldset>
+                        <button type="submit" class="button-primary button-large submit-button">Get My Style Report</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works-section" class="how-it-works-area section-spacing" role="region" aria-label="How ChromaShape Works">
+            <div class="container-div">
+                <h2 class="section-heading">How Our AI Stylist Works Its Magic</h2>
+                <div class="steps-layout">
+                    <article class="step-card">
+                        <div class="step-icon-box" aria-hidden="true">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h3>Input Your Info</h3>
+                        <p>Provide your gender and height, which helps our AI refine its initial understanding.</p>
+                    </article>
+                    <article class="step-card">
+                        <div class="step-icon-box" aria-hidden="true">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>Upload Photos</h3>
+                        <p>Upload a head to knee-body photo for general analysis and a close-up for precise skin undertone detection.</p>
+                    </article>
+                    <article class="step-card">
+                        <div class="step-icon-box" aria-hidden="true">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>AI Vision Analysis</h3>
+                        <p>Our AI meticulously extracts key features like</p>
+                        <ul>
+                            <li>Hair Color</li>
+                            <li>Eye Color</li>
+                            <li>Skin Tone & Undertone</li>
+                            <li>Body Shape</li>
+                            <li>Torso Length</li>
+                        </ul>
+                    </article>
+                    <article class="step-card">
+                        <div class="step-icon-box" aria-hidden="true">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3>Get Personalized Suggestions</h3>
+                        <p>Receive tailored fashion recommendations, color palettes, and outfit ideas designed just for you.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="about-us-section" class="about-us-area section-spacing" role="region" aria-label="About ChromaShape">
+            <div class="container-div">
+                <div class="about-content-wrapper">
+                    <div class="about-text-content">
+                        <h2 class="section-heading">About ChromaShape</h2>
+                        <p>ChromaShape was born from a passion for fashion and a deep understanding of artificial intelligence. Our team of Computer vision Engineers, Fashion stylists, and Data scientists identified a gap in personalized styling—generic advice doesn't cut it.</p>
+                        <p>We've meticulously developed a system that goes beyond superficial style quizzes. By leveraging to analyze your unique physical attributes from photos and cross-referencing with our proprietary, hand-crafted fashion dataset, we deliver truly personalized and accurate style recommendations. Our mission is to empower everyone to dress with confidence and express their best selves.</p>
+                    </div>
+                    <div class="about-image-area">
+                        <img src="/static/images/img1.jpg" alt="My photo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq-section" class="faq-area section-spacing background-light" role="region" aria-label="Frequently Asked Questions">
+            <div class="container-div">
+                <h2 class="section-heading">Frequently Asked Questions</h2>
+                <div class="faq-question-accordion">
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-1" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-1" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-1">
+                            <span class="question-text">What does the ChromaShape tool do?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-1" class="accordion-content-text" role="region" aria-labelledby="faq-question-1">
+                            <p>ChromaShape analyzes your unique physical attributes (gender, height, hair color, eye color, skin tone, undertone, body shape, torso length) from your uploaded photos and personal input. It then cross-references this data with our comprehensive fashion dataset to provide highly personalized style suggestions, color palettes, and outfit recommendations tailored specifically for you.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-2" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-2" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-2">
+                            <span class="question-text">How does ChromaShape work?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-2" class="accordion-content-text" role="region" aria-labelledby="faq-question-2">
+                            <p>You provide your gender and height, and upload two photos: a head to knee-body photo for general feature extraction (like body shape) and a close-up for precise skin undertone analysis. Our advanced OpenCV-powered AI processes these images, extracts your unique attributes, and matches them against our custom fashion dataset. In seconds, you receive your personalized style report and suggestions.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-3" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-3" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-3">
+                            <span class="question-text">What are the benefits of using ChromaShape?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-3" class="accordion-content-text" role="region" aria-labelledby="faq-question-3">
+                            <p>Benefits include saving time on styling decisions, discovering new flattering styles, making smarter shopping choices, optimizing your existing wardrobe, and significantly boosting your confidence in your appearance. It provides professional styling advice accessible to everyone.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-4" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-4" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-4">
+                            <span class="question-text">Do I need technical skills to use ChromaShape?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-4" class="accordion-content-text" role="region" aria-labelledby="faq-question-4">
+                            <p>Absolutely not! ChromaShape is designed to be incredibly user-friendly. Just follow the simple steps of inputting your details and uploading photos. Our AI handles all the complex analysis behind the scenes.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-5" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-5" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-5">
+                            <span class="question-text">What kind of photos should I upload for analysis?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-5" class="accordion-content-text" role="region" aria-labelledby="faq-question-5">
+                            <p>For the full-body analysis, a clear, well-lit photo where your entire body is visible (preferably against a plain background) is ideal. For undertone analysis, a close-up photo of your wrist or neck area in natural lighting (without direct sunlight) will yield the most accurate results.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-6" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-6" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-6">
+                            <span class="question-text">Is my privacy protected when I upload photos?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-6" class="accordion-content-text" role="region" aria-labelledby="faq-question-6">
+                            <p>Yes, your privacy is our top priority. All uploaded images are processed securely using encryption and are used solely for the purpose of generating your style recommendations. We do not store your images longer than necessary for processing, nor do we share them with third parties. Please refer to our Privacy Policy for full details.</p>
+                        </div>
+                    </div>
+                    <div class="accordion-item-box">
+                        <input type="checkbox" id="faq-toggle-7" class="accordion-toggle-checkbox" aria-hidden="true">
+                        <label for="faq-toggle-7" class="accordion-header-label" aria-expanded="false" aria-controls="faq-answer-7">
+                            <span class="question-text">Is ChromaShape available as a mobile app?</span>
+                            <span class="icon fas fa-chevron-right" aria-hidden="true"></span>
+                        </label>
+                        <div id="faq-answer-7" class="accordion-content-text" role="region" aria-labelledby="faq-question-7">
+                            <p>Currently, ChromaShape is a web-based platform, optimized for both desktop and mobile browsers. We are actively working on developing dedicated mobile applications for iOS and Android, so stay tuned for updates!</p>
+                        </div>
+                    </div>    
+
+                </div>
+            </div>
+        </section>
+
+
+        <section class="call-to-action-section background-primary text-align-center" role="region" aria-label="Call to Action: Get Your Style Analysis">
+            <div class="container-div">
+                <h2 class="section-heading">Ready for Your Style Transformation?</h2>
+                <p>Unlock your perfect look with the power of AI. It's fast, accurate, and truly personalized.</p>
+                <a href="#get-suggestions-form" class="button-secondary button-large">Get My Free Style Analysis!</a>
+            </div>
+        </section>
+        </main>
+
+    <script>
+        // --- Existing scripts for file name display ---
+        document.getElementById('full-body-photo-upload').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('fullBodyFileName').textContent = fileName;
+        });
+        document.getElementById('wrist-photo-upload').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('wristFileName').textContent = fileName;
+        });
+
+        // --- MANUAL DETECTION LOGIC ---
+        document.getElementById('manualDetectLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            const gender = document.getElementById('gender-select').value;
+            const imageFile = document.getElementById('full-body-photo-upload').files[0];
+            const height = document.getElementById('height-input').value;
+
+            if (gender && imageFile && height) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('userImage', e.target.result);
+                    window.open(`manual.html?gender=${gender}&height=${height}`, '_blank');
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                alert('Please select your gender, enter your height, and upload your body photo first.');
+            }
+        });
+
+        // --- LISTENER FOR MANUAL DETECTION RESULT ---
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'manualBodyShapeResult') {
+                const bodyShape = event.newValue;
+                if (bodyShape) {
+                    displayResultInTextbox(bodyShape);
+                    localStorage.removeItem('manualBodyShapeResult');
+                }
+            }
+        });
+
+        // --- AUTO DETECTION LOGIC (INTEGRATED FROM updated.html) ---
+        let isAnalyzing = false;
+
+        document.getElementById('autoDetectLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            if (isAnalyzing) return;
+
+            const gender = document.getElementById('gender-select').value;
+            const imageFile = document.getElementById('full-body-photo-upload').files[0];
+
+            if (gender && imageFile) {
+                startAutoDetection(gender, imageFile);
+            } else {
+                alert('Please select your gender and upload your body photo first for auto-detection.');
+            }
+        });
+
+        async function startAutoDetection(gender, file) {
+            isAnalyzing = true;
+            const autoBtnText = document.getElementById('autoBtnText');
+            autoBtnText.innerHTML = '<span class="loading-spinner"></span>Analyzing...';
+
+            // We need image dimensions for the simulation, so we load the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const image = new Image();
+                image.onload = async function() {
+                    // Simulate analysis delay
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    const analysis = simulateBodyShapeAnalysis(image.width, image.height, gender);
+                    displayResultInTextbox(analysis.shape);
+
+                    isAnalyzing = false;
+                    autoBtnText.innerHTML = 'Auto Detect';
+                };
+                image.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function simulateBodyShapeAnalysis(width, height, gender) {
+            // This is the core simulation logic from updated.html
+            const baseShoulderWidth = width * 0.28;
+            const baseBustWidth = width * 0.24;
+            const baseWaistWidth = width * 0.18;
+            const baseHipWidth = width * 0.26;
+            
+            const variation = Math.random();
+            let shoulderWidth, bustWidth, waistWidth, hipWidth;
+            
+            if (variation < 0.2) { // Simulate Rectangle/Apple
+                shoulderWidth = baseShoulderWidth + width * 0.02; bustWidth = baseBustWidth + width * 0.02; waistWidth = baseWaistWidth + width * 0.06; hipWidth = baseHipWidth + width * 0.01;
+            } else if (variation < 0.4) { // Simulate Inverted Triangle
+                shoulderWidth = baseShoulderWidth + width * 0.08; bustWidth = baseBustWidth + width * 0.06; waistWidth = baseWaistWidth + width * 0.02; hipWidth = baseHipWidth - width * 0.04;
+            } else if (variation < 0.6) { // Simulate Triangle 
+                shoulderWidth = baseShoulderWidth - width * 0.05; bustWidth = baseBustWidth - width * 0.03; waistWidth = baseWaistWidth + width * 0.03; hipWidth = baseHipWidth + width * 0.06;
+            } else { // Simulate Hourglass/Trapezoid
+                shoulderWidth = baseShoulderWidth + width * 0.03; bustWidth = baseBustWidth + width * 0.04; waistWidth = baseWaistWidth - width * 0.01; hipWidth = baseHipWidth + width * 0.03;
+            }
+            
+            const measurements = { shoulder: Math.round(shoulderWidth), bust: Math.round(bustWidth), waist: Math.round(waistWidth), hip: Math.round(hipWidth) };
+            let shape = '';
+            
+            if (gender === 'female') {
+                if ((measurements.bust / measurements.waist > 1.4) && (measurements.hip / measurements.waist < 1.2)) { shape = 'Inverted Triangle'; } 
+                else if ((measurements.hip / measurements.waist > 1.3) && (measurements.bust / measurements.waist < 1.2)) { shape = 'Triangle'; } 
+                else if ((measurements.bust / measurements.waist > 1.25) && (measurements.hip / measurements.waist > 1.25) && (measurements.waist < measurements.bust * 0.8)) { shape = 'Hourglass'; } 
+                else if (measurements.waist >= measurements.bust * 0.9 && measurements.waist >= measurements.hip * 0.9) { shape = 'Apple'; } 
+                else { shape = 'Rectangle'; }
+            } else { // Male shapes
+                if ((measurements.shoulder / measurements.waist > 1.3) && (measurements.waist / measurements.hip < 1.1)) { shape = 'Inverted Triangle'; } 
+                else if ((measurements.shoulder / measurements.waist < 1.1) && (measurements.waist / measurements.hip > 1.2)) { shape = 'Triangle'; } 
+                else if (measurements.waist > measurements.shoulder * 0.9 && measurements.waist > measurements.hip * 0.9) { shape = 'Oval'; } 
+                else if ((measurements.shoulder / measurements.waist > 1.15) && (measurements.waist / measurements.hip > 1.05)) { shape = 'Trapezoid'; } 
+                else { shape = 'Rectangle'; }
+            }
+            return { shape, measurements };
+        }
+
+        // --- SHARED FUNCTION TO DISPLAY RESULT ---
+        function displayResultInTextbox(bodyShape) {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultInput = document.getElementById('bodyShapeResultInput');
+            
+            resultInput.value = bodyShape;
+            resultContainer.style.display = 'block';
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+    </script>
+    
+    <script>
+        const sr = ScrollReveal({
+            distance: '65px',
+            duration: 1100,
+            delay: 450,
+            reset: true
+        });
+
+        // Animate elements on page load
+        sr.reveal('.hero-content-area h1',{delay:200, origin:'top'});
+        sr.reveal('.hero-content-area p',{delay:350, origin:'top'});
+        sr.reveal('.hero-action-buttons',{delay:450, origin:'top'});
+        
+        // Animate sections on scroll
+        sr.reveal('.section-heading',{delay:200, origin:'top'});
+        sr.reveal('.section-subheading',{delay:300, origin:'top'});
+        
+        sr.reveal('.recommendation-card',{delay:400, origin:'left'});
+        sr.reveal('.image-reference',{delay:400, origin:'right'});
+        
+        sr.reveal('.upload-form-wrapper',{delay:200, origin:'bottom'});
+        
+        sr.reveal('.step-card',{delay:200, origin:'bottom', interval: 200});
+
+        sr.reveal('.about-text-content',{delay:200, origin:'left'});
+        sr.reveal('.about-image-area',{delay:200, origin:'right'});
+        
+        sr.reveal('.accordion-item-box',{delay:200, origin:'bottom', interval: 100});
+        
+        sr.reveal('.call-to-action-section h2',{delay:200, origin:'top'});
+        sr.reveal('.call-to-action-section p',{delay:300, origin:'top'});
+        sr.reveal('.call-to-action-section .button-secondary',{delay:400, origin:'bottom'});
+
+    </script>
+
+    <footer style="background: #222; color: #eee; text-align: center; padding: 30px 20px; margin-top: 50px;">
+      <div style="max-width: 1100px; margin: auto;">
+        <h3 style="margin-bottom: 15px; font-weight: 600; font-size: 20px;">ChromaShape</h3>
+        <p style="margin-bottom: 20px; font-size: 14px; color: #bbb;">
+          Your personalized AI-powered fashion and styling assistant.
+        </p>
+        <p style="font-size: 13px; color: #aaa;">&copy; 2025  ChromaShape. All rights reserved.</p>
+      </div>
+    </footer>
+
+</body>
+</html>

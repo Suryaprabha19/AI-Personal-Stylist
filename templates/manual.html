@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Body Shape Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style1.css') }}">
+    <style>
+        .pose-example-container { 
+            text-align: center; 
+            margin: 0; /* Removed margin */
+            border: 2px dashed #ddd; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background-color: #f9f9f9; 
+            display: flex; /* Added for vertical centering of content */
+            flex-direction: column; /* Stack h4 and img vertically */
+        }
+        .pose-example-container img { 
+            /* These new rules make the image fill the container height */
+            height: 100%;
+            width: auto;
+            object-fit: contain; /* Ensures the whole image fits without distortion */
+            border-radius: 8px; 
+        }
+        .pose-example-container h4 { 
+            margin-top: 0; 
+            color: #333; 
+        }
+        .canvas-container { 
+            display: flex; 
+            gap: 20px; 
+            align-items: stretch; /* This is the key change to make children equal height */
+            justify-content: center; 
+            min-height: 100px; 
+            flex-wrap: wrap; 
+        }
+        .canvas-wrapper { 
+            position: relative; 
+            display: flex; /* Added to help canvas align */
+        }
+        #poseExampleDisplay { 
+            margin-top: 0; 
+        }
+    </style>
+</head>
+<body onload="loadInitialData()">
+    <div class="container">
+        <h1>Body Shape Analyzer</h1>
+
+        <div class="instructions">
+            <h3>Key Measurement Points and Their Roles</h3>
+            <ul>
+                <li><strong>Points 1 & 2:</strong> Connects the Shoulders to measure their total width.</li>
+                <li><strong>Points 3 & 4:</strong> Connects the Bust/Chest to measure its fullest width.</li>
+                <li><strong>Points 5 & 6:</strong> Connects the Waist to measure its narrowest point.</li>
+                <li><strong>Points 7 & 8:</strong> Connects the Hips to measure their widest point.</li>
+                <li><strong>Points 9:</strong> The Top of the Head, used as the highest vertical reference point.</li>
+                <li><strong>Points 10:</strong> The Knee Level, used as the lowest vertical reference point for body scale.</li>
+            </ul>
+        </div>
+
+        <div class="input-section" id="manualInputSection">
+            <div class="input-group">
+                <label for="imageInput">📸 Upload Body Image:</label>
+                <input type="file" id="imageInput" accept="image/*" />
+            </div>
+            <div class="input-group">
+                <label for="genderSelect">⚤ Gender:</label>
+                <select id="genderSelect">
+                    <option value="">Select Gender</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="calibration-section" id="calibrationSection" style="display: none;">
+            <h3>Measurement Calibration:</h3>
+            <p>For maximum accuracy, provide a reference measurement. This helps calibrate the pixel-to-centimeter conversion.</p>
+            <div class="reference-grid">
+                <div class="reference-item">
+                    <strong>Height Reference</strong><br>
+                    <label for="personHeight">Person's Height (cm):</label>
+                    <input type="number" id="personHeight" placeholder="e.g., 170" min="140" max="220">
+                </div>
+                <div class="reference-item">
+                    <strong>Object Reference</strong><br>
+                    <label for="referenceObject">Known Object Size (cm):</label>
+                    <input type="number" id="referenceObject" placeholder="e.g., 21 (A4 paper)" min="1" max="100" value="21">
+                    <small>If you have an object of known size in the image</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="marking-instructions" id="markingInstructions">
+            <h3>Landmark Marking Instructions:</h3>
+            <p><strong>Click precisely on the image to mark the following landmarks in order:</strong></p><br>
+            <div class="current-landmark" id="currentLandmark">Click "Start Professional Analysis" to begin</div>
+            <div class="landmark-list" id="landmarkList">
+                <div class="landmark-item" data-landmark="0">1. 👈 Left Shoulder - Outermost edge</div>
+                <div class="landmark-item" data-landmark="1">2. 👉 Right Shoulder - Outermost edge</div>
+                <div class="landmark-item" data-landmark="2">3. 👈 Left Bust - Widest point</div>
+                <div class="landmark-item" data-landmark="3">4. 👉 Right Bust - Widest point</div>
+                <div class="landmark-item" data-landmark="4">5. 👈 Left Waist - Narrowest point</div>
+                <div class="landmark-item" data-landmark="5">6. 👉 Right Waist - Narrowest point</div>
+                <div class="landmark-item" data-landmark="6">7. 👈 Left Hip - Widest point</div>
+                <div class="landmark-item" data-landmark="7">8. 👉 Right Hip - Widest point</div>
+                <div class="landmark-item" data-landmark="8">9. 👆 Top of Head</div>
+                <div class="landmark-item" data-landmark="9">10. 🦵 Knee Level - Any point at knee height</div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button id="startMarkingBtn" onclick="startMarking()" disabled>Start Professional Analysis</button>
+            <button class="reset-btn" onclick="resetLandmarks()">Reset All Landmarks</button>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-wrapper">
+                <canvas id="canvas" style="display: none;"></canvas>
+                <div class="accuracy-indicator" id="accuracyIndicator" style="display: none;">Professional Accuracy</div>
+            </div>
+            <div class="pose-example-container" id="poseExampleDisplay" style="display: none;">
+                <h4>Reference Pose</h4>
+                <img src="{{ url_for('static', filename='images/reference.png') }}" alt="Example of correct pose for body shape analysis">
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button class="calculate-btn" onclick="calculateMeasurements()" disabled>Calculate Body Shape</button>
+        </div>
+
+        <div id="errorDiv" class="error" style="display: none;"></div>
+
+        <div id="resultsDiv" class="results" style="display: none;">
+            <div id="bodyShapeDiv" class="body-shape"></div>
+        </div>
+    </div>
+
+    <script>
+        let canvas, ctx;
+        let imageElement;
+        let landmarks = [];
+        let currentLandmarkIndex = 0;
+        let isMarking = false;
+        let imageScale = 1;
+        let canvasOffset = { x: 0, y: 0 };
+        let calibrationMode = false;
+        let pixelToCmRatio = null;
+
+        const landmarkNames = [
+            "Left Shoulder Edge", "Right Shoulder Edge",
+            "Left Bust Point", "Right Bust Point",
+            "Left Waist Point", "Right Waist Point",
+            "Left Hip Point", "Right Hip Point",
+            "Top of Head", "Knee Level"
+        ];
+
+        function loadInitialData() {
+            const params = new URLSearchParams(window.location.search);
+            const gender = params.get('gender');
+            const imageData = localStorage.getItem('userImage');
+            const height = params.get('height');
+
+            if (height) {
+                document.getElementById('personHeight').value = height;
+            }
+            if (gender) {
+                document.getElementById('genderSelect').value = gender;
+            }
+            if (imageData) {
+                imageElement = new Image();
+                imageElement.onload = function() {
+                    if (imageElement.height < 800) {
+                        showError('Image quality warning: For professional accuracy, please upload an image with minimum 800px height. Current height: ' + imageElement.height + 'px');
+                    } else {
+                        hideError();
+                    }
+                    document.getElementById('manualInputSection').style.display = 'none';
+                    setupCanvas();
+                    updateButtons();
+                    enableCalibration(); 
+                };
+                imageElement.src = imageData;
+            }
+        }
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageElement = new Image();
+                    imageElement.onload = function() {
+                        setupCanvas();
+                        updateButtons();
+                        enableCalibration(); 
+                    };
+                    imageElement.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('genderSelect').addEventListener('change', updateButtons);
+
+        function setupCanvas() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            const maxWidth = 500; // Adjusted max width for side-by-side view
+            const maxHeight = 700;
+            let scale = Math.min(maxWidth / imageElement.width, maxHeight / imageElement.height, 1);
+            imageScale = scale;
+            canvas.width = imageElement.width * scale;
+            canvas.height = imageElement.height * scale;
+            drawImage();
+            updateCanvasOffset();
+            canvas.addEventListener('click', handleCanvasClick);
+            window.addEventListener('resize', updateCanvasOffset);
+        }
+
+        function enableCalibration() {
+            calibrationMode = true;
+            calculatePixelRatio();
+            const canvasEl = document.getElementById('canvas');
+            const poseExample = document.getElementById('poseExampleDisplay');
+            
+            canvasEl.style.display = 'block';
+            poseExample.style.display = 'flex'; 
+            poseExample.style.flexDirection = 'column';
+
+            setTimeout(() => {
+                const canvasRect = canvasEl.getBoundingClientRect();
+                poseExample.style.width = (canvasRect.width * 0.8) + 'px'; // Make reference slightly smaller
+                const poseImg = poseExample.querySelector('img');
+                if (poseImg) {
+                    poseImg.style.width = '100%';
+                    poseImg.style.objectFit = 'contain';
+                }
+            }, 0);
+        }
+
+        function calculatePixelRatio() {
+            const personHeight = parseFloat(document.getElementById('personHeight').value);
+            const referenceObject = parseFloat(document.getElementById('referenceObject').value);
+            if (personHeight && personHeight >= 140 && personHeight <= 220) {
+                const estimatedImageHeight = personHeight * 0.7;
+                pixelToCmRatio = estimatedImageHeight / imageElement.height;
+                document.getElementById('accuracyIndicator').style.display = 'block';
+                document.getElementById('accuracyIndicator').textContent = 'Height Calibrated';
+            } else if (referenceObject && referenceObject >= 1 && referenceObject <= 100) {
+                pixelToCmRatio = referenceObject / 100;
+                document.getElementById('accuracyIndicator').style.display = 'block';
+                document.getElementById('accuracyIndicator').textContent = 'Object Calibrated';
+            }
+        }
+
+        function drawImage() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+            drawLandmarks();
+            drawMeasurementLines();
+        }
+
+        function updateCanvasOffset() {
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            canvasOffset.x = rect.left;
+            canvasOffset.y = rect.top;
+        }
+
+        function handleCanvasClick(e) {
+            if (!isMarking || currentLandmarkIndex >= landmarkNames.length) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            landmarks[currentLandmarkIndex] = { x: x / imageScale, y: y / imageScale };
+            updateLandmarkList();
+            drawImage();
+            currentLandmarkIndex++;
+            updateCurrentLandmark();
+            if (currentLandmarkIndex >= landmarkNames.length) {
+                isMarking = false;
+                document.getElementById('currentLandmark').innerHTML = "All landmarks marked! Click <strong>'Calculate Body Shape'</strong> for professional results";
+                updateButtons();
+            }
+        }
+
+        function drawLandmarks() {
+            landmarks.forEach((landmark, index) => {
+                if (landmark) {
+                    const x = landmark.x * imageScale;
+                    const y = landmark.y * imageScale;
+                    ctx.fillStyle = '#ff4757';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#000000';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.lineWidth = 3;
+                    ctx.strokeText(String(index + 1), x - 4, y + 5);
+                    ctx.fillText(String(index + 1), x - 4, y + 5);
+                }
+            });
+        }
+
+        function drawMeasurementLines() {
+            if (landmarks.filter(l => l).length < 8) return;
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            const pairs = [[0, 1], [2, 3], [4, 5], [6, 7]];
+            pairs.forEach(([left, right]) => {
+                if (landmarks[left] && landmarks[right]) {
+                    ctx.beginPath();
+                    ctx.moveTo(landmarks[left].x * imageScale, landmarks[left].y * imageScale);
+                    ctx.lineTo(landmarks[right].x * imageScale, landmarks[right].y * imageScale);
+                    ctx.stroke();
+                }
+            });
+            ctx.setLineDash([]);
+        }
+
+        function startMarking() {
+            if (!imageElement || !document.getElementById('genderSelect').value) {
+                showError('Please upload an image and select gender first');
+                return;
+            }
+            isMarking = true;
+            currentLandmarkIndex = 0;
+            landmarks = new Array(landmarkNames.length).fill(null);
+            document.getElementById('markingInstructions').style.display = 'block';
+            updateCurrentLandmark();
+            updateLandmarkList();
+            updateButtons();
+            hideError();
+        }
+
+        function resetLandmarks() {
+            landmarks.fill(null);
+            currentLandmarkIndex = 0;
+            isMarking = false;
+            if (canvas) drawImage();
+            updateLandmarkList();
+            updateButtons();
+            document.getElementById('currentLandmark').innerHTML = "Click <strong>'Start Professional Analysis'</strong> to begin";
+            document.getElementById('resultsDiv').style.display = 'none';
+        }
+
+        function updateCurrentLandmark() {
+            const currentLandmarkDiv = document.getElementById('currentLandmark');
+            if (currentLandmarkIndex < landmarkNames.length) {
+                currentLandmarkDiv.innerHTML = `<strong>Mark: ${landmarkNames[currentLandmarkIndex]}</strong><br><small>Click precisely on the image</small>`;
+            }
+        }
+
+        function updateLandmarkList() {
+            document.querySelectorAll('.landmark-item').forEach((item, index) => {
+                item.classList.toggle('completed', !!landmarks[index]);
+            });
+        }
+
+        function updateButtons() {
+            const hasImage = !!imageElement;
+            const hasGender = document.getElementById('genderSelect').value !== '';
+            const allLandmarksMarked = landmarks.every(l => l !== null);
+            document.getElementById('startMarkingBtn').disabled = !(hasImage && hasGender);
+            document.querySelector('.calculate-btn').disabled = !allLandmarksMarked;
+        }
+
+        function calculateMeasurements() {
+            if (!landmarks.every(l => l !== null)) {
+                showError('Please mark all landmarks first');
+                return;
+            }
+            try {
+                const measurements = calculateProfessionalMeasurements();
+                const gender = document.getElementById('genderSelect').value;
+                const bodyShape = detectBodyShape(measurements.shoulder, measurements.bust, measurements.waist, measurements.hip, gender);
+                displayResults(bodyShape);
+                hideError();
+            } catch (error) {
+                showError('Error calculating measurements. Please check landmark placement.');
+            }
+        }
+
+        function calculateProfessionalMeasurements() {
+            const shoulderWidth = Math.abs(landmarks[1].x - landmarks[0].x);
+            const bustWidth = Math.abs(landmarks[3].x - landmarks[2].x);
+            const waistWidth = Math.abs(landmarks[5].x - landmarks[4].x);
+            const hipWidth = Math.abs(landmarks[7].x - landmarks[6].x);
+            let finalPixelToCmRatio = pixelToCmRatio;
+            if (!finalPixelToCmRatio) {
+                const bodyHeightPixels = Math.abs(landmarks[9].y - landmarks[8].y);
+                const gender = document.getElementById('genderSelect').value;
+                const headToKneeRatio = gender === 'female' ? 0.58 : 0.59;
+                const avgHeight = gender === 'female' ? 165 : 175;
+                finalPixelToCmRatio = (avgHeight * headToKneeRatio) / bodyHeightPixels;
+            }
+            return {
+                shoulder: parseFloat((shoulderWidth * finalPixelToCmRatio).toFixed(1)),
+                bust: parseFloat((bustWidth * finalPixelToCmRatio).toFixed(1)),
+                waist: parseFloat((waistWidth * finalPixelToCmRatio).toFixed(1)),
+                hip: parseFloat((hipWidth * finalPixelToCmRatio).toFixed(1)),
+            };
+        }
+
+        function detectBodyShape(shoulder, bust, waist, hip, gender) {
+            const ratios = {
+                shoulderHip: shoulder / hip,
+                waistHip: waist / hip,
+                waistBust: waist / bust,
+            };
+            if (gender.toLowerCase() === "female") {
+                if (ratios.shoulderHip > 1.05) return "Inverted Triangle";
+                if (ratios.shoulderHip < 0.95) return "Triangle";
+                if (ratios.waistHip < 0.75 && ratios.waistBust < 0.75) return "Hourglass";
+                if (waist > Math.min(shoulder, hip)) return "Apple";
+                return "Rectangle";
+            } else {
+                if (ratios.shoulderHip > 1.05) return "Inverted Triangle";
+                if (ratios.shoulderHip < 0.95) return "Triangle";
+                if (waist / shoulder >= 0.95) return "Oval";
+                return "Trapezoid";
+            }
+        }
+
+        function displayResults(bodyShape) {
+            const bodyShapeDiv = document.getElementById('bodyShapeDiv');
+            bodyShapeDiv.innerHTML = `<strong>Your Body Shape :</strong> ${bodyShape}`;
+            
+            // Save the result to localStorage
+            localStorage.setItem('manualBodyShapeResult', bodyShape);
+            
+            bodyShapeDiv.innerHTML += '<br><p style="color: green; font-style: italic;">Result sent to the main page. This tab will now close.</p>';
+            document.getElementById('resultsDiv').style.display = 'block';
+            document.getElementById('resultsDiv').scrollIntoView({ behavior: 'smooth' });
+            
+            // Close the window after a delay
+            setTimeout(() => window.close(), 3000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorDiv');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorDiv').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+/* Professional Body Shape Analyzer CSS */
+/* Modern, clean design with medical/professional aesthetics */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #2c3e50;
+    background: linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%);
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid #e8f4f8;
+}
+
+/* Header */
+h1 {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    text-align: center;
+    padding: 32px 20px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    color: #1e40af;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+/* Instructions Section */
+.instructions {
+    background: #f8fafc;
+    padding: 24px;
+    margin: 24px;
+    border-radius: 12px;
+    border-left: 4px solid #2563eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.instructions ul {
+    list-style: none;
+    padding: 0;
+}
+
+.instructions li {
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.instructions li:last-child {
+    border-bottom: none;
+}
+
+.instructions li strong {
+    color: #1e40af;
+    font-weight: 600;
+    min-width: 120px;
+    margin-right: 12px;
+}
+
+/* Input Sections */
+.input-section,
+.calibration-section,
+.marking-instructions {
+    padding: 24px;
+    margin: 0 24px 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+/* Form Controls */
+input[type="file"],
+select,
+input[type="number"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:focus,
+select:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+select option {
+    padding: 8px;
+}
+
+/* Reference Grid */
+.reference-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .reference-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.reference-item {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.reference-item strong {
+    color: #1e40af;
+    display: block;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.reference-item small {
+    display: block;
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* Buttons */
+.control-buttons {
+    text-align: center;
+    padding: 24px;
+    margin: 0 24px;
+}
+
+button {
+    padding: 14px 28px;
+    margin: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 160px;
+}
+
+#startMarkingBtn,
+.calculate-btn {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+#startMarkingBtn:hover:not(:disabled),
+.calculate-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.calibrate-btn {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.calibrate-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+button:disabled {
+    background: #9ca3af;
+    color: #ffffff;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+button:disabled:hover {
+    transform: none;
+}
+
+/* Landmark Instructions */
+.current-landmark {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.landmark-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.landmark-item {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.landmark-item:hover {
+    border-color: #2563eb;
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.landmark-item.completed {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+/* Canvas and Pose Example */
+.canvas-container {
+    padding: 24px;
+    margin: 0 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.canvas-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+#canvas {
+    border-radius: 12px;
+    cursor: crosshair;
+    transition: all 0.3s ease;
+}
+
+#canvas:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.accuracy-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.pose-example-container {
+    background: #f8fafc;
+    border: 2px dashed #94a3b8;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-left: 20px;
+    min-width: 250px;
+    transition: all 0.3s ease;
+}
+
+.pose-example-container:hover {
+    border-color: #2563eb;
+    background: #f1f5f9;
+}
+
+.pose-example-container h4 {
+    color: #1e40af;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.pose-example-container img {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.pose-example-container img:hover {
+    transform: scale(1.02);
+}
+
+/* Results Section */
+.results {
+    background: linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%);
+    margin: 24px;
+    padding: 32px;
+    border-radius: 12px;
+    border: 2px solid #2563eb;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+}
+
+.body-shape {
+    font-size: 1.8rem;
+    color: #1e40af;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Error Styling */
+.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+    padding: 16px 20px;
+    margin: 24px;
+    border-radius: 8px;
+    border-left: 4px solid #dc2626;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        margin: 0 20px;
+        border-radius: 12px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+        padding: 24px 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px 0;
+    }
+    
+    .container {
+        margin: 0 10px;
+        border-radius: 8px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        padding: 20px 16px;
+    }
+    
+    .input-section,
+    .calibration-section,
+    .marking-instructions,
+    .canvas-container {
+        margin: 0 16px 16px;
+        padding: 16px;
+    }
+    
+    .instructions {
+        margin: 16px;
+        padding: 16px;
+    }
+    
+    .control-buttons {
+        margin: 0 16px;
+        padding: 16px;
+    }
+    
+    button {
+        min-width: 120px;
+        margin: 4px;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .canvas-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .pose-example-container {
+        margin-left: 0;
+        margin-top: 20px;
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .landmark-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+        padding: 16px 12px;
+    }
+    
+    .body-shape {
+        font-size: 1.4rem;
+        padding: 16px;
+    }
+    
+    button {
+        width: 100%;
+        margin: 6px 0;
+    }
+}
+
+/* Loading States and Animations */
+.landmark-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.landmark-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.landmark-item.completed::before {
+    left: 100%;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus indicators for accessibility */
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .container {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    button {
+        display: none;
+    }
+}
